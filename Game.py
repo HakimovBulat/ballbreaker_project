@@ -19,7 +19,8 @@ def load_image(name, colorkey=None):
 
 
 player = None
-FPS = 50
+FPS = 100
+V = 200
 
 
 def terminate():
@@ -84,7 +85,7 @@ all_sprites = pygame.sprite.Group()
 
 
 class Platfotm(pygame.sprite.Sprite):
-    image_platform = load_image("platform.png", 1)
+    image_platform = load_image("platform.png")
 
     def __init__(self, *group):
         super().__init__(*group)
@@ -94,8 +95,7 @@ class Platfotm(pygame.sprite.Sprite):
 
         self.rect.x = 250
         self.rect.y = 450
-        self.rect.width = 100
-        self.rect.height = 10
+
         
     def update(self, *args):
         if args and args[0].type == pygame.KEYDOWN:
@@ -111,8 +111,65 @@ class Platfotm(pygame.sprite.Sprite):
             self.rect.x -= 2
         elif self.move == 'RIGHT':
             self.rect.x += 2
+        
+    def collideball(self, ball):
+        if ball.rect.y + 20 == self.rect.y and self.rect.x < ball.rect.x < self.rect.x + 100:
+            if ball.move == 'left_down':
+                ball.move = 'left_up'
+            else:
+                ball.move = 'right_up'
+            
+        
 
-Platfotm(all_sprites)
+class Ball(pygame.sprite.Sprite):
+    image = load_image("ball.png")
+
+    def __init__(self, *group):
+        super().__init__(*group)
+        self.image = Ball.image
+        self.rect = self.image.get_rect()
+        self.move = 'left_up'
+
+        self.rect.x = 300
+        self.rect.y = 250
+
+        
+    def update(self, *args):
+        if self.rect.x <= 1:
+            if self.move == 'left_up':
+                self.move = 'right_up'
+            else:
+                self.move = 'right_down'
+        elif self.rect.x >= size[0] - 20:
+            if self.move == 'right_up':
+                self.move = 'left_up'
+            else:
+                self.move = 'left_down'
+        elif self.rect.y <= 1:
+            if self.move == 'right_up':
+                self.move = 'right_down'
+            else:
+                self.move = 'left_down'
+        elif self.rect.y >= size[1] - 20:
+            if self.move == 'left_down':
+                self.move = 'left_up'
+            else:
+                self.move = 'right_up'
+    
+        if self.move == 'left_up':
+            self.rect.x, self.rect.y = self.rect.x - V / FPS, self.rect.y - V / FPS
+        elif self.move == 'right_up':
+            self.rect.x, self.rect.y = self.rect.x + V / FPS, self.rect.y - V / FPS
+        elif self.move == 'left_down':
+            self.rect.x, self.rect.y = self.rect.x - V / FPS, self.rect.y + V / FPS
+        elif self.move == 'right_down':
+            self.rect.x, self.rect.y = self.rect.x + V / FPS, self.rect.y + V / FPS
+
+
+platform = Platfotm(all_sprites)
+ball = Ball(all_sprites)
+print(platform.rect.width)
+
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('Уровень 1')
@@ -120,54 +177,17 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode(size)
 
     running = True
-    ball_pos = 300, 250
-
-    v = 100
-    fps = 150
     clock = pygame.time.Clock()
-    move = 'left_up'
 
     while running:
         screen.fill((0, 0, 0))
-
-        pygame.draw.circle(screen, 'white', ball_pos, 10)
-        #v += 10
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        if move == 'left_up':
-            ball_pos = ball_pos[0] - v / fps, ball_pos[1] - v / fps
-        elif move == 'right_up':
-            ball_pos = ball_pos[0] + v / fps, ball_pos[1] - v / fps
-        elif move == 'left_down':
-            ball_pos = ball_pos[0] - v / fps, ball_pos[1] + v / fps
-        elif move == 'right_down':
-            ball_pos = ball_pos[0] + v / fps, ball_pos[1] + v / fps
-        pygame.draw.circle(screen, 'white', ball_pos, 10)
-
-        if ball_pos[0] <= 10:
-            if move == 'left_up':
-                move = 'right_up'
-            else:
-                move = 'right_down'
-        elif ball_pos[0] >= size[0] - 10:
-            if move == 'right_up':
-                move = 'left_up'
-            else:
-                move = 'left_down'
-        elif ball_pos[1] <= 10:
-            if move == 'right_up':
-                move = 'right_down'
-            else:
-                move = 'left_down'
-        elif ball_pos[1] >= size[1] - 10:
-            if move == 'left_down':
-                move = 'left_up'
-            else:
-                move = 'right_up'
+        platform.collideball(ball)
         all_sprites.draw(screen)
         all_sprites.update(event)
-        clock.tick(fps)
+        clock.tick(FPS)
         pygame.display.flip()
     pygame.quit()
