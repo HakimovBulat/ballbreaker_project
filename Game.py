@@ -1,7 +1,7 @@
 import os
 import sys
 import pygame
-
+from random import sample
 
 pygame.init()
 size = WIDTH, HEIGHT = 600, 500
@@ -19,7 +19,7 @@ def load_image(name, colorkey=None):
 
 
 player = None
-FPS = 100
+FPS = 50
 V = 200
 
 
@@ -82,7 +82,7 @@ def level_screen(level):
 
 level_screen('first_level.png')
 all_sprites = pygame.sprite.Group()
-
+bricks_group = pygame.sprite.Group()
 
 class Platfotm(pygame.sprite.Sprite):
     image_platform = load_image("platform.png")
@@ -92,10 +92,8 @@ class Platfotm(pygame.sprite.Sprite):
         self.image = Platfotm.image_platform
         self.rect = self.image.get_rect()
         self.move = 'STOP'
-
         self.rect.x = 250
         self.rect.y = 450
-
         
     def update(self, *args):
         if args and args[0].type == pygame.KEYDOWN:
@@ -108,33 +106,36 @@ class Platfotm(pygame.sprite.Sprite):
                 self.move = 'STOP'
 
         if self.move == 'LEFT':
-            self.rect.x -= 2
+            self.rect.x -= 10
         elif self.move == 'RIGHT':
-            self.rect.x += 2
+            self.rect.x += 10
         
     def collideball(self, ball):
-        if ball.rect.y + 20 == self.rect.y and self.rect.x < ball.rect.x < self.rect.x + 100:
+        if ball.rect.y + 20 == self.rect.y and self.rect.x <= ball.rect.x <= self.rect.x + 100:
             if ball.move == 'left_down':
                 ball.move = 'left_up'
             else:
                 ball.move = 'right_up'
-            
-        
+
 
 class Ball(pygame.sprite.Sprite):
-    image = load_image("ball.png")
-
     def __init__(self, *group):
         super().__init__(*group)
-        self.image = Ball.image
-        self.rect = self.image.get_rect()
+        self.image = pygame.Surface((20, 20), pygame.SRCALPHA, 32)
+        pygame.draw.circle(self.image, pygame.Color("white"), (10, 10), 10)
+        self.rect = pygame.Rect(300, 250, 20, 20)
         self.move = 'left_up'
 
-        self.rect.x = 300
-        self.rect.y = 250
-
-        
     def update(self, *args):
+        if self.move == 'left_up':
+            self.rect.x, self.rect.y = self.rect.x - V / FPS, self.rect.y - V / FPS
+        elif self.move == 'right_up':
+            self.rect.x, self.rect.y = self.rect.x + V / FPS, self.rect.y - V / FPS
+        elif self.move == 'left_down':
+            self.rect.x, self.rect.y = self.rect.x - V / FPS, self.rect.y + V / FPS
+        elif self.move == 'right_down':
+            self.rect.x, self.rect.y = self.rect.x + V / FPS, self.rect.y + V / FPS
+
         if self.rect.x <= 1:
             if self.move == 'left_up':
                 self.move = 'right_up'
@@ -155,20 +156,23 @@ class Ball(pygame.sprite.Sprite):
                 self.move = 'left_up'
             else:
                 self.move = 'right_up'
-    
-        if self.move == 'left_up':
-            self.rect.x, self.rect.y = self.rect.x - V / FPS, self.rect.y - V / FPS
-        elif self.move == 'right_up':
-            self.rect.x, self.rect.y = self.rect.x + V / FPS, self.rect.y - V / FPS
-        elif self.move == 'left_down':
-            self.rect.x, self.rect.y = self.rect.x - V / FPS, self.rect.y + V / FPS
-        elif self.move == 'right_down':
-            self.rect.x, self.rect.y = self.rect.x + V / FPS, self.rect.y + V / FPS
+
+class Brick(pygame.sprite.Sprite):
+    def __init__(self, x, y, width, height):
+        super().__init__(all_sprites)
+        self.image = pygame.Surface((width, height), pygame.SRCALPHA, 32)
+        pygame.draw.rect(self.image, tuple(sample(range(10, 255, 1), 3)), (x, y, width, height), 0)
+        self.rect = pygame.Rect(x, y, width, height)
+        self.move = 'left_up'
+        bricks_group.add(self)
 
 
 platform = Platfotm(all_sprites)
 ball = Ball(all_sprites)
-print(platform.rect.width)
+for i in range(5):
+    for j in range(6):
+        Brick(30 + 40 * j, 20 + 15 * i, 80, 30)
+
 
 if __name__ == '__main__':
     pygame.init()
@@ -181,13 +185,23 @@ if __name__ == '__main__':
 
     while running:
         screen.fill((0, 0, 0))
-        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
         platform.collideball(ball)
         all_sprites.draw(screen)
         all_sprites.update(event)
+        hits = pygame.sprite.spritecollide(ball, bricks_group, True)
+        if hits:
+            if ball.move == 'left_down':
+                ball.move = 'left_up'
+            elif ball.move == 'right_down':
+                ball.move = 'right_up'
+            elif ball.move == 'left_up':
+                ball.move = 'left_down'
+            elif ball.move == 'right_up':
+                ball.move = 'right_down'
         clock.tick(FPS)
         pygame.display.flip()
     pygame.quit()
