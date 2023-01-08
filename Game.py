@@ -1,7 +1,8 @@
 import os
 import sys
 import pygame
-from random import sample
+from random import sample, choice
+
 
 pygame.init()
 size = WIDTH, HEIGHT = 600, 500
@@ -13,9 +14,15 @@ def load_image(name, colorkey=None):
     if not os.path.isfile(fullname):
         print(f"Файл с изображением '{fullname}' не найден")
         sys.exit()
-
     image = pygame.image.load(fullname)
     return image
+
+
+def create_particles(position):
+    particle_count = 20
+    numbers = range(-5, 6)
+    for _ in range(particle_count):
+        Particle(position, choice(numbers), choice(numbers))
 
 
 player = None
@@ -34,6 +41,40 @@ def start_screen():
                   "Разбей все кирпичики белым шаром,",
                   "используя платформу, передвигающуюся с",
                   "помощью клавиш <- и ->.", "", "", "Пробел - начать игру",
+                      "", "Escape - выйти"]
+    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 30)
+    text_coord = 50
+    for line in intro_text:
+        string_rendered = font.render(line, 1, pygame.Color('white'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        screen.blit(string_rendered, intro_rect)
+    clock = pygame.time.Clock()
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    return
+                if event.key == pygame.K_ESCAPE:
+                    terminate()
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
+def win_screen(level):
+    boom = AnimatedSprite(load_image("boom.png"), 9, 9, 50, 50)
+    intro_text = ["Вы прошли уровень " + level + '!', "",
+                  "",
+                  "",
+                  "",
+                  "", "", "", "Пробел - продолжить игру",
                       "", "Escape - выйти"]
     fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
@@ -160,19 +201,67 @@ class Ball(pygame.sprite.Sprite):
 class Brick(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
         super().__init__(all_sprites)
-        self.image = pygame.Surface((width, height), pygame.SRCALPHA, 32)
-        pygame.draw.rect(self.image, tuple(sample(range(10, 255, 1), 3)), (x, y, width, height), 0)
-        self.rect = pygame.Rect(x, y, width, height)
+        self.image = pygame.Surface((width, height))
+        self.image.fill(tuple(sample(range(10, 255, 1), 3)))
+        
+        self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = x, y
         self.move = 'left_up'
         bricks_group.add(self)
+
+
+screen_rect = (0, 0, WIDTH, HEIGHT)
+
+class Particle(pygame.sprite.Sprite):
+    fire = [load_image("star (1).png")]
+    for scale in (5, 10, 20):
+        fire.append(pygame.transform.scale(fire[0], (scale, scale)))
+
+    def __init__(self, pos, dx, dy):
+        super().__init__(all_sprites)
+        self.image = choice(self.fire)
+        self.rect = self.image.get_rect()
+
+        self.velocity = [dx, dy]
+        self.rect.x, self.rect.y = pos
+        self.gravity = 1
+
+    def update(self, *args):
+        self.velocity[1] += self.gravity
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+        if not self.rect.colliderect(screen_rect):
+            self.kill()
+
+
+class AnimatedSprite(pygame.sprite.Sprite):
+    def __init__(self, sheet, columns, rows, x, y):
+        super().__init__(all_sprites)
+        self.frames = []
+        self.cut_sheet(sheet, columns, rows)
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect = self.rect.move(x, y)
+
+    def cut_sheet(self, sheet, columns, rows):
+        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns, 
+                                sheet.get_height() // rows)
+        for j in range(rows):
+            for i in range(columns):
+                frame_location = (self.rect.w * i, self.rect.h * j)
+                self.frames.append(sheet.subsurface(pygame.Rect(
+                    frame_location, self.rect.size)))
+
+    def update(self, *args):
+        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+        self.image = self.frames[self.cur_frame]
 
 
 platform = Platfotm(all_sprites)
 ball = Ball(all_sprites)
 for i in range(5):
     for j in range(6):
-        Brick(30 + 40 * j, 20 + 15 * i, 80, 30)
-
+        Brick(30 + 81 * j, 20 + 31 * i, 80, 30)
 
 if __name__ == '__main__':
     pygame.init()
@@ -202,6 +291,10 @@ if __name__ == '__main__':
                 ball.move = 'left_down'
             elif ball.move == 'right_up':
                 ball.move = 'right_down'
+            for hit in hits:
+                create_particles(hit.rect.center)
         clock.tick(FPS)
         pygame.display.flip()
+        if not bricks_group:
+            win_screen("1")
     pygame.quit()
