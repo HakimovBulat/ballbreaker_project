@@ -25,8 +25,8 @@ def load_image(name, colorkey=None):
 class Platfotm(pygame.sprite.Sprite):
     image_platform = load_image("platform.png")
 
-    def __init__(self, *group):
-        super().__init__(*group)
+    def __init__(self):
+        super().__init__(all_sprites)
         self.image = Platfotm.image_platform
         self.rect = self.image.get_rect()
         self.move = 'STOP'
@@ -44,23 +44,29 @@ class Platfotm(pygame.sprite.Sprite):
                 self.move = 'STOP'
 
         if self.move == 'LEFT':
-            self.rect.x -= 10
+            if self.rect.x > 0:
+                self.rect.x -= 10
         elif self.move == 'RIGHT':
-            self.rect.x += 10
+            if self.rect.x < 500:
+                self.rect.x += 10
         
     def collideball(self, ball):
         if ball.rect.y + 20 == self.rect.y and self.rect.x <= ball.rect.x <= self.rect.x + 100:
             ball.vx = ball.vx
             ball.vy = -ball.vy
-            
+    
+    def collideball_fast(self, ball):
+        if ball.rect.y + 20 == self.rect.y and self.rect.x <= ball.rect.x <= self.rect.x + 100:
+            ball.vx = ball.vx + 1
+            ball.vy = -(ball.vy + 1)
 
 
 class Ball(pygame.sprite.Sprite):
-    def __init__(self, *group):
-        super().__init__(*group)
+    def __init__(self, x=300, y=250, color=(255, 255, 255)):
+        super().__init__(all_sprites)
         self.image = pygame.Surface((20, 20), pygame.SRCALPHA, 32)
-        pygame.draw.circle(self.image, pygame.Color("white"), (10, 10), 10)
-        self.rect = pygame.Rect(300, 250, 20, 20)
+        pygame.draw.circle(self.image, color, (10, 10), 10)
+        self.rect = pygame.Rect(x, y, 20, 20)
         self.vx = 4
         self.vy = 4
 
