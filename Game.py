@@ -1,4 +1,3 @@
-import os
 import sys
 import pygame
 from Sprites import *
@@ -108,6 +107,9 @@ class Game:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
                         self.level1()
+                        self.level2()
+                        self.level3()
+                        return
                     if event.key == pygame.K_ESCAPE:
                         self.terminate()
             pygame.display.flip()
@@ -130,18 +132,17 @@ class Game:
 
     def level1(self):
         self.level_screen('first_level.png')
-    
         Border(0, 0, WIDTH, 0)
         Border(0, HEIGHT, WIDTH, HEIGHT)
         Border(-1, 0, -1, HEIGHT)
         Border(WIDTH, 0, WIDTH, HEIGHT)
         platform = Platfotm()
         ball = Ball()
-        for i in range(5):
-            for j in range(6):
-                Brick(30 + 81 * j, 20 + 31 * i, 80, 30)
+        #for i in range(5):
+        #    for j in range(6):
+        #        Brick(30 + 81 * j, 20 + 31 * i, 80, 30)
 
-        #Brick(150, 20 + 31, 80, 30)
+        Brick(150, 20 + 31, 80, 30)
         pygame.init()
         pygame.display.set_caption('Уровень 1')
         size = WIDTH, HEIGHT
@@ -155,15 +156,15 @@ class Game:
                 if event.type == pygame.QUIT:
                     running = False
             
-            platform.collideball_fast(ball)
-                
+            platform.collideball(ball)
+            
             all_sprites.draw(screen)
             all_sprites.update(event)
             hits = pygame.sprite.spritecollide(ball, bricks_group, True)
             if hits:
                 for hit in hits:
                     self.create_particles(hit.rect.center)
-                
+
             clock.tick(FPS)
             pygame.display.flip()
             if not bricks_group:
@@ -176,6 +177,7 @@ class Game:
                     sprite.kill()
                 self.lose_screen()
                 return
+            pygame.display.flip()
         pygame.quit()
 
     def level2(self):
@@ -183,14 +185,14 @@ class Game:
 
         Border(0, 0, WIDTH, 0)
         Border(0, HEIGHT, WIDTH, HEIGHT)
-        Border(0, 0, 0, HEIGHT)
+        Border(-1, 0, -1, HEIGHT)
         Border(WIDTH, 0, WIDTH, HEIGHT)
         platform = Platfotm()
         ball = Ball()
-        for i in range(5):
-            for j in range(6):
-                Brick(30 + 81 * j, 20 + 31 * i, 80, 30)
-        #Brick(150, 20 + 31, 80, 30)
+        #for i in range(5):
+        #    for j in range(6):
+        #        Brick(30 + 81 * j, 20 + 31 * i, 80, 30)
+        Brick(150, 20 + 31, 80, 30)
         camera = Camera()
         pygame.init()
         pygame.display.set_caption('Уровень 2')
@@ -214,7 +216,8 @@ class Game:
                     self.create_particles(hit.rect.center)
             camera.update(ball); 
             for sprite in all_sprites:
-                  camera.apply(sprite)
+                camera.apply(sprite)
+            
             clock.tick(FPS)
             pygame.display.flip()
             if not bricks_group:
@@ -227,6 +230,7 @@ class Game:
                     sprite.kill()
                 self.lose_screen()
                 return
+            pygame.display.flip()
         pygame.quit()
     
     def level3(self):
@@ -238,15 +242,15 @@ class Game:
         Border(WIDTH, 0, WIDTH, HEIGHT)
         platform = Platfotm()
         ball = Ball()
-        fake_ball1 = Ball(x=randint(50, 450), y=randint(50, 450), color=tuple(sample(range(10, 250, 1), 3)))
-        fake_ball2 = Ball(x=randint(50, 450), y=randint(50, 450), color=tuple(sample(range(10, 250, 1), 3)))
-        fake_ball3 = Ball(x=randint(50, 450), y=randint(50, 450), color=tuple(sample(range(10, 250, 1), 3)))
-        fake_ball4 = Ball(x=randint(50, 450), y=randint(50, 450), color=tuple(sample(range(10, 250, 1), 3)))
+        fake_ball1 = Ball(x=randint(50, 450), y=randint(50, 450), radius=randint(11, 20))
+        fake_ball2 = Ball(x=randint(50, 450), y=randint(50, 450), radius=randint(11, 20))
+        fake_ball3 = Ball(x=randint(50, 450), y=randint(50, 450), radius=randint(11, 20))
+        fake_ball4 = Ball(x=randint(50, 450), y=randint(50, 450), radius=randint(11, 20))
 
-        for i in range(5):
-            for j in range(6):
-                Brick(30 + 81 * j, 20 + 31 * i, 80, 30)
-        #Brick(150, 20 + 31, 80, 30)
+        #for i in range(5):
+        #    for j in range(6):
+        #        Brick(30 + 81 * j, 20 + 31 * i, 80, 30)
+        Brick(150, 20 + 31, 80, 30)
         pygame.init()
         pygame.display.set_caption('Уровень 3')
         size = WIDTH, HEIGHT
@@ -278,6 +282,7 @@ class Game:
                     sprite.kill()
                 self.lose_screen()
                 return
+            pygame.display.flip()
         pygame.quit()
 
     def game(self):

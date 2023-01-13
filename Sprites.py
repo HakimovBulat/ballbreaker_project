@@ -1,6 +1,8 @@
 import pygame
 import os
 from random import sample, choice, randint, randrange
+import sys
+
 
 pygame.init()
 size = WIDTH, HEIGHT = 600, 500
@@ -18,6 +20,9 @@ vertical_borders = pygame.sprite.Group()
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
     image = pygame.image.load(fullname)
     return image
 
@@ -43,31 +48,35 @@ class Platfotm(pygame.sprite.Sprite):
             if args[0].key in [pygame.K_LEFT, pygame.K_RIGHT]:
                 self.move = 'STOP'
 
-        if self.move == 'LEFT':
-            if self.rect.x > 0:
-                self.rect.x -= 10
-        elif self.move == 'RIGHT':
-            if self.rect.x < 500:
-                self.rect.x += 10
+        if self.move == 'LEFT' and self.rect.x > 0:
+            self.rect.x -= 10
+        elif self.move == 'RIGHT' and self.rect.x < WIDTH - self.rect.width:
+            self.rect.x += 10
         
     def collideball(self, ball):
-        if ball.rect.y + 20 == self.rect.y and self.rect.x <= ball.rect.x <= self.rect.x + 100:
+        if ball.rect.y + 20 == self.rect.y and self.rect.x <= ball.rect.x <= self.rect.x + self.rect.width:
             ball.vx = ball.vx
             ball.vy = -ball.vy
     
     def collideball_fast(self, ball):
-        if ball.rect.y + 20 == self.rect.y and self.rect.x <= ball.rect.x <= self.rect.x + 100:
-            ball.vx = ball.vx + 1
-            ball.vy = -(ball.vy + 1)
+        if ball.rect.y + 20 == self.rect.y and self.rect.x <= ball.rect.x <= self.rect.x + self.rect.width:
+            if ball.vx > 0:
+                ball.vx = ball.vx + 0.5
+            elif ball.vx < 0:
+                ball.vx = ball.vx - 0.5
+            if ball.vy > 0:
+                ball.vy = -(ball.vy + 0.5)
+            elif ball.vy < 0:
+                ball.vy = -(ball.vy - 0.5)
 
 
 class Ball(pygame.sprite.Sprite):
-    def __init__(self, x=300, y=250, color=(255, 255, 255)):
+    def __init__(self, x=300, y=250, radius=10):
         super().__init__(all_sprites)
-        self.image = pygame.Surface((20, 20), pygame.SRCALPHA, 32)
-        pygame.draw.circle(self.image, color, (10, 10), 10)
-        self.rect = pygame.Rect(x, y, 20, 20)
-        self.vx = 4
+        self.image = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA, 32)
+        pygame.draw.circle(self.image, (255, 255, 255), (radius, radius), radius)
+        self.rect = pygame.Rect(x, y, radius * 2, radius * 2)
+        self.vx = -3
         self.vy = 4
 
     def update(self, *args):
