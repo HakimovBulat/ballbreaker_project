@@ -48,10 +48,12 @@ class Platfotm(pygame.sprite.Sprite):
             if args[0].key in [pygame.K_LEFT, pygame.K_RIGHT]:
                 self.move = 'STOP'
 
-        if self.move == 'LEFT' and self.rect.x > 0:
-            self.rect.x -= 10
-        elif self.move == 'RIGHT' and self.rect.x < WIDTH - self.rect.width:
-            self.rect.x += 10
+        if self.move == 'LEFT':
+            if self.rect.x > 0:
+                self.rect.x -= 10
+        elif self.move == 'RIGHT':
+            if self.rect.x < WIDTH - self.rect.width:
+                self.rect.x += 10
         
     def collideball(self, ball):
         if ball.rect.y + 20 == self.rect.y and self.rect.x <= ball.rect.x <= self.rect.x + self.rect.width:
@@ -64,20 +66,20 @@ class Platfotm(pygame.sprite.Sprite):
                 ball.vx = ball.vx + 0.5
             elif ball.vx < 0:
                 ball.vx = ball.vx - 0.5
-            if ball.vy > 0:
+            elif ball.vy > 0:
                 ball.vy = -(ball.vy + 0.5)
             elif ball.vy < 0:
                 ball.vy = -(ball.vy - 0.5)
 
 
 class Ball(pygame.sprite.Sprite):
-    def __init__(self, x=300, y=250, radius=10):
+    def __init__(self, x=300, y=250, vx=-3, vy=4):
         super().__init__(all_sprites)
-        self.image = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA, 32)
-        pygame.draw.circle(self.image, (255, 255, 255), (radius, radius), radius)
-        self.rect = pygame.Rect(x, y, radius * 2, radius * 2)
-        self.vx = -3
-        self.vy = 4
+        self.image = pygame.Surface((20, 20), pygame.SRCALPHA, 32)
+        pygame.draw.circle(self.image, (255, 255, 255), (10, 10), 10)
+        self.rect = pygame.Rect(x, y, 20, 20)
+        self.vx = vx
+        self.vy = vy
 
     def update(self, *args):
         self.rect = self.rect.move(self.vx, self.vy)
@@ -95,9 +97,10 @@ class Brick(pygame.sprite.Sprite):
         super().__init__(all_sprites)
         self.image = pygame.Surface((width, height))
         self.image.fill(tuple(sample(range(10, 255, 1), 3)))
-        
         self.rect = self.image.get_rect()
-        self.rect.x, self.rect.y = x, y
+        self.rect.x = x
+        self.rect.y = y
+
         bricks_group.add(self)
 
 
@@ -157,8 +160,9 @@ class Border(pygame.sprite.Sprite):
             self.add(vertical_borders)
             self.image = pygame.Surface([1, y2 - y1])
             self.rect = pygame.Rect(x1, y1, 1, y2 - y1)
+            self.image.fill((255, 255, 255))
         else:
             self.add(horizontal_borders)
             self.image = pygame.Surface([x2 - x1, 1])
             self.rect = pygame.Rect(x1, y1, x2 - x1, 1)
-        self.image.fill((255, 255, 255))
+            self.image.fill((255, 255, 255))
