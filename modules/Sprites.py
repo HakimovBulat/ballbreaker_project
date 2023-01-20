@@ -66,18 +66,18 @@ class Platfotm(pygame.sprite.Sprite):
                 ball.vx = ball.vx + 0.5
             elif ball.vx < 0:
                 ball.vx = ball.vx - 0.5
-            elif ball.vy > 0:
+            if ball.vy > 0:
                 ball.vy = -(ball.vy + 0.5)
             elif ball.vy < 0:
                 ball.vy = -(ball.vy - 0.5)
 
 
 class Ball(pygame.sprite.Sprite):
-    def __init__(self, x=300, y=250, vx=-3, vy=4):
+    def __init__(self, vx=-3, vy=4):
         super().__init__(all_sprites)
         self.image = pygame.Surface((20, 20), pygame.SRCALPHA, 32)
         pygame.draw.circle(self.image, (255, 255, 255), (10, 10), 10)
-        self.rect = pygame.Rect(x, y, 20, 20)
+        self.rect = pygame.Rect(300, 250, 20, 20)
         self.vx = vx
         self.vy = vy
 

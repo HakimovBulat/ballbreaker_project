@@ -145,6 +145,9 @@ class Game:
                     self.terminate()
                 elif event.type == MYEVENTTYPE:
                     return
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.terminate()
             pygame.display.flip()
             clock.tick(FPS)
 
@@ -173,6 +176,9 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.terminate()
             platform.collideball_fast(ball)
             all_sprites.draw(screen)
             all_sprites.update(event)
@@ -224,6 +230,9 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.terminate()
 
             platform.collideball(ball)
             all_sprites.draw(screen)
@@ -260,9 +269,9 @@ class Game:
         Border(WIDTH, 0, WIDTH, HEIGHT)
         platform = Platfotm()
         ball = Ball()
-        fake_ball1 = Ball(x=randint(50, 450), y=randint(50, 450), vx = randint(-2, 3), vy = randint(-2, 3))
-        fake_ball2 = Ball(x=randint(50, 450), y=randint(50, 450), vx = randint(-2, 3), vy = randint(-2, 3))
-        fake_ball3 = Ball(x=randint(50, 450), y=randint(50, 450), vx = randint(-2, 3), vy = randint(-2, 3))
+        fake_ball1 = Ball(vx = 3, vy = 4)
+        fake_ball2 = Ball(vx = -3, vy = -4)
+        fake_ball3 = Ball(vx = 3, vy = -4)
         for i in range(5):
             for j in range(6):
                 Brick(30 + 81 * j, 20 + 31 * i, 80, 30)
@@ -279,6 +288,9 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.terminate()
             platform.collideball(ball)
             all_sprites.draw(screen)
             all_sprites.update(event)
